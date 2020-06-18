@@ -23,7 +23,7 @@ with open(file_name) as f:
         if line[0]!= '#':
             num = int(line[0:8], 2)
             program.append(num)
-    print(program)
+    # print(program)
 
 
 
