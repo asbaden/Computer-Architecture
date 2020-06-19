@@ -8,7 +8,7 @@ class CPU:
         self.ram = [0] * 256
         self.pc = 0
         self.reg = [0] * 8
-        self.return_pc = 0 
+        self.fl = 0b00000000
         self.LDI = 0b10000010
         self.PRN = 0b01000111
         self.HLT = 0b00000001
@@ -18,6 +18,11 @@ class CPU:
         self.CALL = 0b01010000
         self.RET = 0b00010001
         self.ADD = 0b10100000
+        self.CMP = 0b10100111
+        self.JEQ = 0b01010101
+        self.JNE = 0b01010110
+        self.JMP = 0b01010100
+
     def load(self, program):
         """Load a program into memory."""
         #    index     value        provide from arg
@@ -35,6 +40,16 @@ class CPU:
             print("REGISTRY:", self.reg)
             self.pc += 3
             return self.reg[reg_a]
+        elif op == "CMP":
+            if self.reg[reg_a] < self.reg[reg_b]:
+                self.fl = 0b00000100
+            elif self.reg[reg_a] > self.reg[reg_b]:
+                self.fl = 0b00000010
+            elif self.reg[reg_a] == self.reg[reg_b]:
+                self.fl = 0b00000001
+            # else:
+            #     self.fl = 0b00000000
+
         else:
             raise Exception(f"Unsupported ALU operation: {op}")
             self.trace()
@@ -82,6 +97,15 @@ class CPU:
                 self.ret()
             if IR == self.ADD:
                 self.add()
+            if IR == self.CMP:
+                self.comp()
+            if IR == self.JEQ:
+                self.jeq()
+            if IR == self.JNE:
+                self.jne()
+            if IR == self.JMP:
+                self.jmp()
+                
     def ram_read(self, address):
         # accept address
         # return it's value
@@ -165,7 +189,34 @@ class CPU:
         reg_address = self.ram[top_of_stack_address]
         self.pc = reg_address
         # Pop the value from the top of the stack and store it in the `PC`.
-
+    
+    def comp(self):
+        self.alu("CMP", 0, 1)
+        self.pc += 3 
+    
+    def jne(self):
+        flag = str(self.fl)[-1]
+        address = self.ram[self.pc + 1]
+        # If `E` flag is clear (false, 0), jump to the address stored in the given
+        # register.
+        if int(flag) is not 1:
+            self.pc = self.reg[address]
+        else:
+            self.pc += 2 
+    
+    def jeq(self):
+        flag = str(self.fl)[-1]
+        # If `equal` flag is set (true), jump to the address stored in the given register.
+        address = self.ram[self.pc +1]
+        if int(flag) is 1:
+            self.pc = self.reg[address]
+        else:
+            self.pc += 2 
+    
+    def jmp(self):
+        # Jump to the address stored in the given register.
+        address = self.ram[self.pc + 1]
+        self.pc = self.reg[address]
 
 
 
