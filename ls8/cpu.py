@@ -206,6 +206,7 @@ class CPU:
     
     def jeq(self):
         flag = str(self.fl)[-1]
+        print("this is flag", flag)
         # If `equal` flag is set (true), jump to the address stored in the given register.
         address = self.ram[self.pc +1]
         if int(flag) is 1:
